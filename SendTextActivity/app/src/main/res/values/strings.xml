@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Определить тему текста</string>
+    <string name="send_button">Отправить</string>
+    <string name="photo_button">Фото в текст</string>
+    <string name="hint">Введите текст здесь</string>
+    <string name="result">результат</string>
+</resources>
