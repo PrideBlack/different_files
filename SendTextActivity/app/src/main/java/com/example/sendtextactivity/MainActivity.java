@@ -1,12 +1,15 @@
 package com.example.sendtextactivity;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.Image;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.SparseArray;
 import android.view.View;
@@ -21,7 +24,6 @@ import com.google.android.gms.vision.text.TextRecognizer;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import java.io.FileOutputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,17 +71,46 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             image_to_text = (Bitmap) extras.get("data");
-            text_field.setText(getTextFromImage(image_to_text));
+            try {
+                getTextFromImage(image_to_text);
+            } catch (Exception e) {
+                text_field.setText("error");
+            }
         }
     }
 
-    private String getTextFromImage (Bitmap image) {
+    public void changeTextIntoTextField(final String text) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                text_field.setText(text);
+            }
+        });
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void getTextFromImage (Bitmap image) throws Exception {
+        OCRRestAPI.PhotoToText(image, new CallBack() {
+            @Override
+            public void onSuccess(String res) {
+                changeTextIntoTextField(res);
+            }
+
+            @Override
+            public void onFail(String error) {
+                changeTextIntoTextField(error);
+            }
+        });
+    }
+
+/*    private String getTextFromImage (Bitmap image) {
         TextRecognizer textRecognizer = new TextRecognizer.Builder(getApplicationContext()).build();
         if(!textRecognizer.isOperational()) {
             Toast.makeText(getApplicationContext(), "Could not get the text", Toast.LENGTH_SHORT).show();
@@ -95,5 +126,6 @@ public class MainActivity extends AppCompatActivity {
             }
             return sb.toString();
         }
-    }
+    }*/
 }
+
